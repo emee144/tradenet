@@ -12,6 +12,7 @@ import {
   TextInput,
   Modal,
 } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@lib/supabase';
@@ -30,6 +31,7 @@ export default function JobDetailScreen({ navigation, route }) {
   const [applying, setApplying] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
+  const [cvFile, setCvFile] = useState(null);
 
   useEffect(() => {
     fetchJob();
@@ -102,6 +104,38 @@ export default function JobDetailScreen({ navigation, route }) {
     setSaved(!saved);
   };
 
+  const pickCV = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ],
+        copyToCacheDirectory: true,
+      });
+      if (!result.canceled && result.assets?.length > 0) {
+        setCvFile(result.assets[0]);
+      }
+    } catch {
+      Alert.alert('Error', 'Could not open file picker.');
+    }
+  };
+
+  const uploadCV = async () => {
+    const { uri, name, mimeType } = cvFile;
+    const ext = name.split('.').pop();
+    const fileName = `cv/${user.id}/${Date.now()}.${ext}`;
+    const response = await fetch(uri);
+    const arrayBuffer = await response.arrayBuffer();
+    const { error } = await supabase.storage
+      .from('cv-uploads')
+      .upload(fileName, arrayBuffer, { contentType: mimeType || 'application/pdf' });
+    if (error) throw error;
+    const { data } = supabase.storage.from('cv-uploads').getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
   const handleApply = async () => {
     if (!user) {
       Alert.alert('Login required', 'Please log in to apply.');
@@ -109,19 +143,27 @@ export default function JobDetailScreen({ navigation, route }) {
     }
     setApplying(true);
     try {
+      const cvUrl = cvFile ? await uploadCV() : null;
+
       const { error } = await supabase.from('job_applications').insert({
         job_id: jobId,
         applicant_id: user.id,
         cover_letter: coverLetter.trim() || null,
+        cv_url: cvUrl,
         status: 'pending',
       });
       if (error) throw error;
+
+      // Notify employer by email (non-blocking — don't fail the apply if email fails)
+      supabase.functions.invoke('notify-job-application', {
+        body: { job_id: jobId, applicant_id: user.id, cover_letter: coverLetter.trim() || null, cv_url: cvUrl },
+      }).catch((e) => console.warn('Email notify failed:', e.message));
+
       setApplied(true);
       setShowApplyModal(false);
-      Alert.alert(
-        'Application Sent! 🎉',
-        'Your application has been submitted. The employer will review it.'
-      );
+      setCoverLetter('');
+      setCvFile(null);
+      Alert.alert('Application Sent!', 'Your application has been submitted. The employer will be notified.');
     } catch (error) {
       if (error.message?.includes('unique')) {
         Alert.alert('Already Applied', 'You have already applied for this job.');
@@ -366,11 +408,28 @@ export default function JobDetailScreen({ navigation, route }) {
             <TextInput
               style={styles.coverLetterInput}
               placeholder="Why are you a good fit for this role?"
+              placeholderTextColor={COLORS.textMuted}
               multiline
               numberOfLines={6}
               value={coverLetter}
               onChangeText={setCoverLetter}
             />
+
+            <Text style={[styles.modalLabel, { marginTop: 16 }]}>CV / Resume (Optional)</Text>
+            {cvFile ? (
+              <View style={styles.cvFileRow}>
+                <Ionicons name="document-text-outline" size={20} color={COLORS.primary} />
+                <Text style={styles.cvFileName} numberOfLines={1}>{cvFile.name}</Text>
+                <TouchableOpacity onPress={() => setCvFile(null)}>
+                  <Ionicons name="close-circle" size={20} color="#ef4444" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.cvPickBtn} onPress={pickCV}>
+                <Ionicons name="cloud-upload-outline" size={20} color={COLORS.primary} />
+                <Text style={styles.cvPickText}>Upload CV (PDF or Word)</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={styles.submitBtn}
@@ -609,6 +668,29 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     textAlignVertical: 'top',
   },
+  cvPickBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.surfaceHigh,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderStyle: 'dashed',
+    borderRadius: RADIUS.md,
+    padding: 14,
+  },
+  cvPickText: { fontSize: 14, color: COLORS.primary, fontWeight: '600' },
+  cvFileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.surfaceHigh,
+    borderWidth: 1,
+    borderColor: COLORS.borderMuted,
+    borderRadius: RADIUS.md,
+    padding: 12,
+  },
+  cvFileName: { flex: 1, fontSize: 13, color: COLORS.textPrimary, fontWeight: '500' },
   submitBtn: {
     backgroundColor: COLORS.primary,
     height: 52,

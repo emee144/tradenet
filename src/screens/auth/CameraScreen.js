@@ -75,7 +75,7 @@ export default function CameraScreen({ navigation, route }) {
     try {
       await uploadVerificationPhoto(`data:image/jpeg;base64,${captured.base64}`);
       await fetchProfile();
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     } catch (error) {
       Alert.alert('Upload Failed', error.message || 'Failed to upload photo. Please try again.');
     } finally {

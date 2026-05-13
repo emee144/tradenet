@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity,
   StyleSheet, TextInput, ActivityIndicator,
-  RefreshControl, Image,
+  RefreshControl, Image, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -62,7 +62,7 @@ export default function MarketScreen({ navigation }) {
       .from('saved_items')
       .select('item_id')
       .eq('user_id', user.id)
-      .eq('item_type', 'market');
+      .eq('item_type', 'market_item');
     setSavedIds((data || []).map((d) => d.item_id));
   };
 
@@ -70,14 +70,16 @@ export default function MarketScreen({ navigation }) {
     if (!user) { navigation.navigate('Login'); return; }
     const isSaved = savedIds.includes(item.id);
     if (isSaved) {
-      await supabase.from('saved_items').delete()
-        .eq('user_id', user.id).eq('item_id', item.id);
       setSavedIds((p) => p.filter((id) => id !== item.id));
+      const { error } = await supabase.from('saved_items').delete()
+        .eq('user_id', user.id).eq('item_id', item.id);
+      if (error) setSavedIds((p) => [...p, item.id]);
     } else {
-      await supabase.from('saved_items').insert({
-        user_id: user.id, item_type: 'market', item_id: item.id,
-      });
       setSavedIds((p) => [...p, item.id]);
+      const { error } = await supabase.from('saved_items').insert({
+        user_id: user.id, item_type: 'market_item', item_id: item.id,
+      });
+      if (error) setSavedIds((p) => p.filter((id) => id !== item.id));
     }
   };
 
@@ -102,10 +104,26 @@ export default function MarketScreen({ navigation }) {
   const activeConfig = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
   const isVerified = (item) => item.seller?.nin_verified && item.seller?.photo_verified;
 
+  const handleCall = (e, item) => {
+    e.stopPropagation();
+    const num = item.phone || item.seller?.phone;
+    if (num) Linking.openURL(`tel:${num}`);
+  };
+
+  const handleWhatsApp = (e, item) => {
+    e.stopPropagation();
+    const num = item.whatsapp || item.phone || item.seller?.phone;
+    if (!num) return;
+    const intl = num.startsWith('0') ? `234${num.slice(1)}` : num.replace('+', '');
+    Linking.openURL(`https://wa.me/${intl}`);
+  };
+
   const renderItem = ({ item }) => {
     const hasImage = item.images && item.images.length > 0;
     const saved = savedIds.includes(item.id);
     const location = [item.city, item.state].filter(Boolean).join(', ') || 'Nigeria';
+    const hasPhone = item.phone || item.seller?.phone;
+    const hasWhatsApp = item.whatsapp || item.phone || item.seller?.phone;
 
     return (
       <TouchableOpacity
@@ -165,6 +183,23 @@ export default function MarketScreen({ navigation }) {
             </View>
             <Text style={styles.timeText}>{timeAgo(item.created_at)}</Text>
           </View>
+
+          {(hasPhone || hasWhatsApp) && (
+            <View style={styles.contactCol}>
+              {hasPhone && (
+                <TouchableOpacity style={styles.callBtn} onPress={(e) => handleCall(e, item)}>
+                  <Ionicons name="call" size={14} color={COLORS.primary} />
+                  <Text style={styles.callText}>Call Seller</Text>
+                </TouchableOpacity>
+              )}
+              {hasWhatsApp && (
+                <TouchableOpacity style={styles.waBtn} onPress={(e) => handleWhatsApp(e, item)}>
+                  <Ionicons name="logo-whatsapp" size={14} color="#25D366" />
+                  <Text style={styles.waText}>WhatsApp</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -179,7 +214,7 @@ export default function MarketScreen({ navigation }) {
           <Text style={styles.headerTitle}>Market</Text>
           <Text style={styles.headerSub}>Buy & sell items in Nigeria</Text>
         </View>
-        <TouchableOpacity style={styles.postBtn} onPress={() => navigation.navigate('PostMarketItem')}>
+        <TouchableOpacity style={styles.postBtn} onPress={() => navigation.navigate('PostMarket')}>
           <Ionicons name="add" size={18} color={COLORS.textOnGold} />
           <Text style={styles.postBtnText}>Sell</Text>
         </TouchableOpacity>
@@ -219,7 +254,7 @@ export default function MarketScreen({ navigation }) {
               dropdownIconColor={COLORS.primary}
             >
               {CATEGORIES.map((c) => (
-                <Picker.Item key={c.id} label={c.label} value={c.id} color={COLORS.textPrimary} />
+                <Picker.Item key={c.id} label={c.label} value={c.id} color={COLORS.primary} style={styles.pickerItem} />
               ))}
             </Picker>
           </View>
@@ -256,7 +291,7 @@ export default function MarketScreen({ navigation }) {
                 {search ? 'Try a different search term' : 'Be the first to list an item'}
               </Text>
               {!search && (
-                <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('PostMarketItem')}>
+                <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('PostMarket')}>
                   <Ionicons name="add" size={18} color={COLORS.textOnGold} />
                   <Text style={styles.emptyBtnText}>List an item</Text>
                 </TouchableOpacity>
@@ -317,7 +352,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border, alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
   pickerWrap: { flex: 1 },
-  picker: { height: 48, color: COLORS.textPrimary },
+  pickerItem: { backgroundColor: '#1c1b1b', fontSize: 15 },
+  picker: { height: 52, color: COLORS.primary },
   resultCount: { fontSize: 12, color: COLORS.textMuted, fontWeight: '500', flexShrink: 0 },
 
   // ── Grid ──
@@ -392,4 +428,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3, shadowRadius: 6, elevation: 4,
   },
   emptyBtnText: { fontSize: 14, fontWeight: '700', color: COLORS.textOnGold },
+  contactCol: { marginTop: 10, gap: 8 },
+  callBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: COLORS.primaryMuted, borderWidth: 1,
+    borderColor: COLORS.border, borderRadius: RADIUS.md,
+    paddingVertical: 9, paddingHorizontal: 14,
+  },
+  callText: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
+  waBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: 'rgba(37,211,102,0.08)', borderWidth: 1,
+    borderColor: 'rgba(37,211,102,0.25)', borderRadius: RADIUS.md,
+    paddingVertical: 9, paddingHorizontal: 14,
+  },
+  waText: { fontSize: 13, fontWeight: '600', color: '#25D366' },
 });

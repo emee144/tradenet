@@ -34,6 +34,7 @@ export default function PostJobScreen({ navigation }) {
     deadline: '',
     phone: '',
     whatsapp: '',
+    contact_email: '',
   });
   const [errors, setErrors] = useState({});
 
@@ -63,6 +64,7 @@ export default function PostJobScreen({ navigation }) {
     if (!form.state) e.state = 'Please select a state';
     if (form.phone && !/^0[7-9][01]\d{8}$/.test(form.phone)) e.phone = 'Enter a valid Nigerian number (e.g. 08012345678)';
     if (form.whatsapp && !/^0[7-9][01]\d{8}$/.test(form.whatsapp)) e.whatsapp = 'Enter a valid Nigerian number (e.g. 08012345678)';
+    if (form.contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact_email)) e.contact_email = 'Enter a valid email address';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -94,6 +96,7 @@ export default function PostJobScreen({ navigation }) {
         is_active: true,
         phone: form.phone.trim() || null,
         whatsapp: form.whatsapp.trim() || null,
+        contact_email: form.contact_email.trim() || null,
       });
 
       if (error) throw error;
@@ -329,6 +332,21 @@ export default function PostJobScreen({ navigation }) {
                 onChangeText={(v) => update('whatsapp', v)}
                 keyboardType="phone-pad"
                 maxLength={11}
+              />
+            </View>
+          </Field>
+
+          <Field label="Email for Applications" error={errors.contact_email}>
+            <View style={styles.contactInputWrap}>
+              <Ionicons name="mail-outline" size={18} color={COLORS.textMuted} style={styles.contactIcon} />
+              <TextInput
+                style={styles.contactInput}
+                placeholder="e.g. hr@company.com"
+                placeholderTextColor={COLORS.textMuted}
+                value={form.contact_email}
+                onChangeText={(v) => update('contact_email', v)}
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
             </View>
           </Field>

@@ -8,6 +8,28 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@lib/supabase';
 import { COLORS, RADIUS, SPACING } from '@constants/index';
 
+function PasswordField({ label, fieldKey, value, show, onChangeText, onToggleShow }) {
+  return (
+    <View style={styles.fieldWrap}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.inputRow}>
+        <Ionicons name="lock-closed-outline" size={18} color={COLORS.textMuted} style={{ marginRight: 10 }} />
+        <TextInput
+          style={styles.input}
+          placeholder="••••••••"
+          placeholderTextColor={COLORS.textMuted}
+          secureTextEntry={!show}
+          value={value}
+          onChangeText={onChangeText}
+        />
+        <TouchableOpacity onPress={onToggleShow}>
+          <Ionicons name={show ? 'eye-outline' : 'eye-off-outline'} size={18} color={COLORS.textMuted} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 export default function ChangePasswordScreen({ navigation }) {
   const [form, setForm] = useState({ current: '', newPass: '', confirm: '' });
   const [show, setShow] = useState({ current: false, newPass: false, confirm: false });
@@ -40,26 +62,6 @@ export default function ChangePasswordScreen({ navigation }) {
     }
   };
 
-  const PasswordField = ({ label, fieldKey }) => (
-    <View style={styles.fieldWrap}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputRow}>
-        <Ionicons name="lock-closed-outline" size={18} color={COLORS.textMuted} style={{ marginRight: 10 }} />
-        <TextInput
-          style={styles.input}
-          placeholder="••••••••"
-          placeholderTextColor={COLORS.textMuted}
-          secureTextEntry={!show[fieldKey]}
-          value={form[fieldKey]}
-          onChangeText={(v) => update(fieldKey, v)}
-        />
-        <TouchableOpacity onPress={() => toggleShow(fieldKey)}>
-          <Ionicons name={show[fieldKey] ? 'eye-outline' : 'eye-off-outline'} size={18} color={COLORS.textMuted} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
@@ -78,9 +80,9 @@ export default function ChangePasswordScreen({ navigation }) {
         <Text style={styles.sub}>Choose a strong password that you have not used before</Text>
 
         <View style={styles.card}>
-          <PasswordField label="Current password" fieldKey="current" />
-          <PasswordField label="New password" fieldKey="newPass" />
-          <PasswordField label="Confirm new password" fieldKey="confirm" />
+          <PasswordField label="Current password" fieldKey="current" value={form.current} show={show.current} onChangeText={(v) => update('current', v)} onToggleShow={() => toggleShow('current')} />
+          <PasswordField label="New password" fieldKey="newPass" value={form.newPass} show={show.newPass} onChangeText={(v) => update('newPass', v)} onToggleShow={() => toggleShow('newPass')} />
+          <PasswordField label="Confirm new password" fieldKey="confirm" value={form.confirm} show={show.confirm} onChangeText={(v) => update('confirm', v)} onToggleShow={() => toggleShow('confirm')} />
         </View>
 
         <View style={styles.requirementsBox}>

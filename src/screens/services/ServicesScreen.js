@@ -13,8 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@lib/supabase';
 import { useAuthStore } from '@stores/authStore';
+import { Picker } from '@react-native-picker/picker';
 import { COLORS, RADIUS, SPACING, SERVICE_CATEGORIES } from '@constants/index';
-import CategoryPills from '@components/home/CategoryPills';
 import ServiceCard from '@components/home/ServiceCard';
 
 export default function ServicesScreen({ navigation }) {
@@ -147,13 +147,20 @@ export default function ServicesScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Category Pills */}
-      <View style={styles.pillsContainer}>
-        <CategoryPills
-          categories={SERVICE_CATEGORIES}
-          selected={selectedCategory}
-          onSelect={setSelectedCategory}
-        />
+      {/* Category Dropdown */}
+      <View style={styles.pickerContainer}>
+        <Ionicons name="grid-outline" size={18} color={COLORS.textMuted} style={styles.pickerIcon} />
+        <Picker
+          selectedValue={selectedCategory}
+          onValueChange={setSelectedCategory}
+          style={styles.picker}
+          dropdownIconColor={COLORS.primary}
+        >
+          <Picker.Item label="All Categories" value="all" color={COLORS.primary} style={styles.pickerItem} />
+          {SERVICE_CATEGORIES.map((cat) => (
+            <Picker.Item key={cat.id} label={cat.name} value={cat.id} color={COLORS.primary} style={styles.pickerItem} />
+          ))}
+        </Picker>
       </View>
 
       {/* Results Count */}
@@ -250,8 +257,8 @@ const styles = StyleSheet.create({
   // Search
   searchContainer: {
     paddingHorizontal: SPACING.margin,
-    paddingBottom: SPACING.md,
-    backgroundColor: COLORS.surface,
+    paddingBottom: SPACING.sm,
+    paddingTop: SPACING.sm,
   },
   searchBar: {
     flexDirection: 'row',
@@ -270,10 +277,31 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
   },
 
-  // Pills
-  pillsContainer: {
-    backgroundColor: COLORS.surface,
-    paddingBottom: SPACING.sm,
+  // Category Picker
+  pickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surfaceHigh,
+    marginHorizontal: SPACING.margin,
+    marginBottom: SPACING.sm,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.borderMuted,
+    paddingLeft: 12,
+    height: 50,
+    overflow: 'hidden',
+  },
+  pickerIcon: {
+    marginRight: 4,
+  },
+  pickerItem: {
+    backgroundColor: '#1c1b1b',
+    fontSize: 15,
+  },
+  picker: {
+    flex: 1,
+    color: COLORS.primary,
+    height: 50,
   },
 
   // Results

@@ -19,8 +19,8 @@ import { COLORS, RADIUS, SPACING } from '@constants/index';
 import { formatNaira } from '@utils/formatters';
 
 const CATEGORIES = [
-  { id: 'skills', label: 'Skills', icon: 'construct-outline', screen: 'Explore' },
-  { id: 'services', label: 'Services', icon: 'briefcase-outline', screen: 'Explore' },
+  { id: 'skills', label: 'Skills', icon: 'construct-outline', screen: 'ServicesMain' },
+  { id: 'services', label: 'Services', icon: 'briefcase-outline', screen: 'ServicesMain' },
   { id: 'property', label: 'Property', icon: 'home-outline', screen: 'PropertyMain' },
   { id: 'cars', label: 'Vehicles', icon: 'car-outline', screen: 'CarsMain' },
   { id: 'jobs', label: 'Jobs', icon: 'bag-handle-outline', screen: 'JobsMain' },
@@ -154,7 +154,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Browse Categories</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Explore')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Search', { browseAll: true })}>
               <Text style={styles.sectionLink}>View All</Text>
             </TouchableOpacity>
           </View>

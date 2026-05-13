@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '@constants/index';
 
 // Screens
@@ -23,6 +24,7 @@ import MyServicesScreen from '@screens/services/MyServicesScreen';
 import MyPropertiesScreen from '@screens/property/MyPropertiesScreen';
 import MyCarsScreen from '@screens/cars/MyCarsScreen';
 import MyJobsScreen from '@screens/jobs/MyJobsScreen';
+import MyMarketScreen from '@/screens/markets/MyMarketScreen';
 import MyBookingsScreen from '@screens/profile/MyBookingsScreen';
 import MyApplicationsScreen from '@screens/profile/MyApplicationsScreen';
 import SavedItemsScreen from '@screens/profile/SavedItemsScreen';
@@ -31,7 +33,7 @@ import NotificationsScreen from '@screens/profile/NotificationsScreen';
 import SupportScreen from '@screens/profile/SupportScreen';
 import AboutScreen from '@screens/profile/AboutScreen';
 import MarketScreen from '@screens/markets/MarketScreen';
-import PhonesScreen from '@screens/markets/PhonesScreen';
+import MarketDetailScreen from '@screens/markets/MarketDetailScreen';
 import PrivacyPolicyScreen from '@screens/legal/PrivacyPolicyScreen';
 import TermsOfServiceScreen from '@screens/legal/TermsOfServiceScreen';
 
@@ -39,11 +41,13 @@ import PostServiceScreen from '@screens/services/PostServiceScreen';
 import PostPropertyScreen from '@screens/property/PostPropertyScreen';
 import PostJobScreen from '@screens/jobs/PostJobScreen';
 import PostCarScreen from '@screens/cars/PostCarScreen';
+import PostMarketScreen from '@screens/markets/PostMarketScreen';
 
 import EditCarScreen from '@screens/cars/EditCarScreen';
 import EditServiceScreen from '@screens/services/EditServiceScreen';
 import EditJobScreen from '@screens/jobs/EditJobScreen';
 import EditPropertyScreen from '@screens/property/EditPropertyScreen';
+import EditMarketScreen from '@screens/markets/EditMarketScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -55,22 +59,25 @@ function HomeStack() {
       <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen name="MarketMain" component={MarketScreen} />
       <Stack.Screen name="PropertyMain" component={PropertyScreen} />
-      <Stack.Screen name='PhonesMain' component={PhonesScreen} />
       <Stack.Screen name="JobsMain" component={JobsScreen} />
       <Stack.Screen name="CarsMain" component={CarsScreen} />
+      <Stack.Screen name="ServicesMain" component={ServicesScreen} />
       <Stack.Screen name="ServiceDetail" component={ServiceDetailScreen} />
       <Stack.Screen name="PropertyDetail" component={PropertyDetailScreen} />
       <Stack.Screen name="JobDetail" component={JobDetailScreen} />
       <Stack.Screen name="CarDetail" component={CarDetailScreen} />
+      <Stack.Screen name="MarketDetail" component={MarketDetailScreen} />
       <Stack.Screen name="ProviderProfile" component={ProviderProfileScreen} />
       <Stack.Screen name="PostService" component={PostServiceScreen} />
       <Stack.Screen name="PostProperty" component={PostPropertyScreen} />
       <Stack.Screen name="PostJob" component={PostJobScreen} />
       <Stack.Screen name="PostCar" component={PostCarScreen} />
+      <Stack.Screen name="PostMarket" component={PostMarketScreen} />
       <Stack.Screen name="EditService" component={EditServiceScreen} />
       <Stack.Screen name="EditProperty" component={EditPropertyScreen} />
       <Stack.Screen name="EditJob" component={EditJobScreen} />
       <Stack.Screen name="EditCar" component={EditCarScreen} />
+      <Stack.Screen name="EditMarket" component={EditMarketScreen} />
       <Stack.Screen name='Notifications' component={NotificationsScreen} />
     </Stack.Navigator>
   );
@@ -121,6 +128,8 @@ function MarketsStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MarketMain" component={MarketScreen} />
+      <Stack.Screen name="MarketDetail" component={MarketDetailScreen} />
+      <Stack.Screen name="EditMarket" component={EditMarketScreen} />
       <Stack.Screen name='PropertyMain' component={PropertyScreen} />
       <Stack.Screen name='PropertyDetail' component={PropertyDetailScreen} />
       <Stack.Screen name='CarsMain' component={CarsScreen} />
@@ -138,6 +147,7 @@ function ProfileStack() {
       <Stack.Screen name="MyProperties" component={MyPropertiesScreen} />
       <Stack.Screen name="MyCars" component={MyCarsScreen} />
       <Stack.Screen name="MyJobs" component={MyJobsScreen} />
+      <Stack.Screen name="MyMarket" component={MyMarketScreen} />
       <Stack.Screen name="MyBookings" component={MyBookingsScreen} />
       <Stack.Screen name="MyApplications" component={MyApplicationsScreen} />
       <Stack.Screen name="SavedItems" component={SavedItemsScreen} />
@@ -153,8 +163,9 @@ function ProfileStack() {
 
 // ── Custom Tab Bar ──
 function CustomTabBar({ state, descriptors, navigation }) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.tabBar}>
+    <View style={[styles.tabBar, { paddingBottom: insets.bottom, height: 62 + insets.bottom }]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
@@ -273,13 +284,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderTopWidth: 0.5,
     borderTopColor: COLORS.borderMuted,
-    paddingBottom: 6,
     paddingTop: 4,
-    height: 62,
     alignItems: 'flex-end',
   },
   tabItem: {
     flex: 1,
+    height: 62,
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: 2,
