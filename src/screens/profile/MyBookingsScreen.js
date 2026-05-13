@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity,
-  StyleSheet, ActivityIndicator, RefreshControl,
+  StyleSheet, ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,10 +44,23 @@ export default function MyBookingsScreen({ navigation }) {
 
   const onRefresh = async () => { setRefreshing(true); await fetchBookings(); setRefreshing(false); };
 
+  const updateStatus = async (bookingId, status) => {
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status })
+      .eq('id', bookingId);
+    if (error) { Alert.alert('Error', error.message); return; }
+    setBookings((prev) =>
+      prev.map((b) => (b.id === bookingId ? { ...b, status } : b))
+    );
+  };
+
   const renderBooking = ({ item }) => {
     const config = STATUS_CONFIG[item.status] || STATUS_CONFIG.pending;
     const isClient = item.client_id === user.id;
+    const isProvider = item.provider_id === user.id;
     const otherParty = isClient ? item.provider?.full_name : item.client?.full_name;
+    const showActions = isProvider && item.status === 'pending';
 
     return (
       <View style={styles.card}>
@@ -84,6 +97,25 @@ export default function MyBookingsScreen({ navigation }) {
         {item.notes ? (
           <Text style={styles.notes} numberOfLines={2}>{item.notes}</Text>
         ) : null}
+
+        {showActions && (
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={styles.rejectBtn}
+              onPress={() => updateStatus(item.id, 'cancelled')}
+            >
+              <Ionicons name="close-circle-outline" size={16} color="#ef4444" />
+              <Text style={styles.rejectText}>Decline</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.acceptBtn}
+              onPress={() => updateStatus(item.id, 'confirmed')}
+            >
+              <Ionicons name="checkmark-circle-outline" size={16} color={COLORS.textOnGold} />
+              <Text style={styles.acceptText}>Accept</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -163,6 +195,18 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 12, color: COLORS.textSecondary },
   metaTime: { fontSize: 11, color: COLORS.textMuted, marginLeft: 'auto' },
   notes: { fontSize: 12, color: COLORS.textSecondary, marginTop: 8, lineHeight: 18 },
+  actionRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
+  rejectBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 10, borderRadius: RADIUS.md,
+    borderWidth: 1, borderColor: '#ef444450', backgroundColor: 'rgba(239,68,68,0.08)',
+  },
+  rejectText: { fontSize: 13, fontWeight: '700', color: '#ef4444' },
+  acceptBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 10, borderRadius: RADIUS.md, backgroundColor: COLORS.primary,
+  },
+  acceptText: { fontSize: 13, fontWeight: '700', color: COLORS.textOnGold },
   empty: { alignItems: 'center', paddingTop: 80 },
   emptyIconWrap: {
     width: 80, height: 80, borderRadius: RADIUS.full,

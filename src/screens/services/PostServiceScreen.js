@@ -220,10 +220,10 @@ export default function PostServiceScreen({ navigation }) {
                 style={[styles.categoryChip, form.category_id === cat.id && styles.categoryChipActive]}
                 onPress={() => update('category_id', cat.id)}
               >
-                <Ionicons 
-                  name={cat.icon || 'construct-outline'} 
-                  size={18} 
-                  color={form.category_id === cat.id ? COLORS.textOnGold : COLORS.textPrimary} 
+                <Ionicons
+                  name={cat.icon}
+                  size={18}
+                  color={form.category_id === cat.id ? COLORS.textOnGold : COLORS.textPrimary}
                 />
                 <Text style={[styles.categoryChipText, form.category_id === cat.id && styles.categoryChipTextActive]}>
                   {cat.name}

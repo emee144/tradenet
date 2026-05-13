@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@lib/supabase';
 import { useAuthStore } from '@stores/authStore';
 import { COLORS, RADIUS, SPACING } from '@constants/index';
-import { formatNaira } from '@utils/formatters';
+import { formatNaira, timeAgo } from '@utils/formatters';
 
 const CATEGORIES = [
   { id: 'skills', label: 'Skills', icon: 'construct-outline', screen: 'ServicesMain' },
@@ -219,6 +219,7 @@ export default function HomeScreen({ navigation }) {
                       <Ionicons name="location-outline" size={12} color={COLORS.textMuted} />
                       <Text style={styles.trendingLocationText} numberOfLines={1}>{getItemLocation(item)}</Text>
                     </View>
+                    <Text style={styles.trendingTime}>{timeAgo(item.created_at)}</Text>
                   </View>
                 </TouchableOpacity>
               )}
@@ -297,6 +298,7 @@ const styles = StyleSheet.create({
   trendingTitle: { fontSize: 13, fontWeight: '600', color: COLORS.textPrimary },
   trendingLocation: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   trendingLocationText: { fontSize: 11, color: COLORS.textMuted, flex: 1 },
+  trendingTime: { fontSize: 10, color: COLORS.textMuted },
   postBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.primary, borderRadius: RADIUS.lg, marginHorizontal: SPACING.margin, padding: SPACING.gutter, marginBottom: SPACING.sm },
   postBannerLeft: { flex: 1 },
   postBannerTitle: { fontSize: 14, fontWeight: '700', color: COLORS.textOnGold, marginBottom: 3 },

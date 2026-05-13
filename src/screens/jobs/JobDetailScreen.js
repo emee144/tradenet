@@ -154,7 +154,6 @@ export default function JobDetailScreen({ navigation, route }) {
       });
       if (error) throw error;
 
-      // Notify employer by email (non-blocking — don't fail the apply if email fails)
       supabase.functions.invoke('notify-job-application', {
         body: { job_id: jobId, applicant_id: user.id, cover_letter: coverLetter.trim() || null, cv_url: cvUrl },
       }).catch((e) => console.warn('Email notify failed:', e.message));

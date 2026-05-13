@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SPACING } from '@constants/index';
-import { formatNaira } from '@utils/formatters';
+import { formatNaira, timeAgo } from '@utils/formatters';
 
 export default function ServiceCard({ service, onPress, onSave, saved = false }) {
   const {
@@ -24,6 +24,7 @@ export default function ServiceCard({ service, onPress, onSave, saved = false })
     provider,
     phone,
     whatsapp,
+    created_at,
   } = service;
 
   const handleCall = (e) => {
@@ -113,13 +114,14 @@ export default function ServiceCard({ service, onPress, onSave, saved = false })
           </View>
         )}
 
-        {/* Location + rating + contact */}
+        {/* Location + time + rating + contact */}
         <View style={styles.metaRow}>
           <View style={styles.locationWrap}>
             <Ionicons name="location-outline" size={12} color={COLORS.textMuted} />
             <Text style={styles.locationText} numberOfLines={1}>
               {[city, state].filter(Boolean).join(', ') || 'Nigeria'}
             </Text>
+            {created_at && <Text style={styles.timeText}> · {timeAgo(created_at)}</Text>}
           </View>
           <View style={styles.rightGroup}>
             {rating > 0 && (
@@ -275,6 +277,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: COLORS.textMuted,
     flex: 1,
+  },
+  timeText: {
+    fontSize: 11,
+    color: COLORS.textMuted,
   },
   rightGroup: { flexDirection: 'row', alignItems: 'center', gap: 6, marginLeft: 8 },
   contactIcon: {

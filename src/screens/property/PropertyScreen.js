@@ -16,10 +16,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@lib/supabase';
 import { useAuthStore } from '@stores/authStore';
 import { COLORS, RADIUS, SPACING, PROPERTY_TYPES } from '@constants/index';
-import { formatNaira } from '@utils/formatters';
+import { formatNaira, timeAgo } from '@utils/formatters';
 
 function PropertyCard({ property, onPress }) {
-  const { title, type, price, price_period, bedrooms, bathrooms, toilet, city, state, images, owner, phone, whatsapp } = property;
+  const { title, type, price, price_period, bedrooms, bathrooms, toilet, city, state, images, owner, phone, whatsapp, created_at } = property;
   const hasImage = images && images.length > 0;
 
   const handleCall = (e) => {
@@ -99,6 +99,7 @@ function PropertyCard({ property, onPress }) {
             <Text style={styles.locationText} numberOfLines={1}>
               {city}{state ? `, ${state}` : ''}
             </Text>
+            {created_at && <Text style={styles.postedTime}>{timeAgo(created_at)}</Text>}
           </View>
 
           <View style={styles.contactBtns}>
@@ -399,7 +400,8 @@ const styles = StyleSheet.create({
 
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   location: { flexDirection: 'row', alignItems: 'center', gap: 4, flex: 1 },
-  locationText: { fontSize: 13, color: COLORS.textMuted },
+  locationText: { fontSize: 13, color: COLORS.textMuted, flex: 1 },
+  postedTime: { fontSize: 11, color: COLORS.textMuted },
   contactBtns: { flexDirection: 'row', gap: 6, marginLeft: 8 },
   contactIcon: {
     width: 30, height: 30, borderRadius: 15,

@@ -2,10 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SPACING } from '@constants/index';
-import { formatNaira } from '@utils/formatters';
+import { formatNaira, timeAgo } from '@utils/formatters';
 
 export default function CarCard({ car, onPress }) {
-  const { title, make, model, year, type, price, price_period, mileage, city, state, images, owner, color, phone, whatsapp } = car;
+  const { title, make, model, year, type, price, price_period, mileage, city, state, images, owner, color, phone, whatsapp, created_at } = car;
 
   const handleCall = (e) => {
     e.stopPropagation();
@@ -88,11 +88,12 @@ export default function CarCard({ car, onPress }) {
           )}
         </View>
 
-        {/* Location + contact */}
+        {/* Location + time + contact */}
         <View style={styles.metaRow}>
           <View style={styles.locationWrap}>
             <Ionicons name="location-outline" size={12} color={COLORS.textMuted} />
             <Text style={styles.locationText} numberOfLines={1}>{location}</Text>
+            {created_at && <Text style={styles.timeText}> · {timeAgo(created_at)}</Text>}
           </View>
           <View style={styles.contactBtns}>
             {(phone || owner?.phone) && (
@@ -167,6 +168,7 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   locationWrap: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1 },
   locationText: { fontSize: 11, color: COLORS.textMuted, flex: 1 },
+  timeText: { fontSize: 11, color: COLORS.textMuted },
   contactBtns: { flexDirection: 'row', gap: 6, marginLeft: 8 },
   contactIcon: {
     width: 28, height: 28, borderRadius: 14,

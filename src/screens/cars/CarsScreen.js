@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: COLORS.primary,
     paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     borderRadius: RADIUS.full,
   },
   postBtnText: { fontSize: 14, fontWeight: '600', color: COLORS.textOnGold },

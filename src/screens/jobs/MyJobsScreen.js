@@ -159,7 +159,9 @@ export default function MyJobsScreen({ navigation }) {
           {item.deadline ? (
             <View style={styles.statItem}>
               <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
-              <Text style={styles.statText}>Due {item.deadline}</Text>
+              <Text style={styles.statText}>
+                Due {new Date(item.deadline).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </Text>
             </View>
           ) : null}
         </View>
