@@ -245,7 +245,6 @@ const styles = StyleSheet.create({
   eyeBtn: { padding: 4 },
   errorText: { fontSize: 12, color: '#ef4444', marginTop: 5, marginLeft: 2 },
 
-  // ── CTA ──
   ctaBtn: {
     backgroundColor: COLORS.primary,
     borderRadius: RADIUS.md,
@@ -263,12 +262,10 @@ const styles = StyleSheet.create({
   ctaBtnDisabled: { opacity: 0.6 },
   ctaText: { fontSize: 16, fontWeight: '700', color: COLORS.textOnGold },
 
-  // ── Divider ──
   divider: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, gap: 10 },
   dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.borderMuted },
   dividerText: { fontSize: 12, color: COLORS.textMuted },
 
-  // ── Bottom ──
   signupLink: { alignItems: 'center', marginBottom: 16 },
   signupText: { fontSize: 13, color: COLORS.textSecondary },
   signupBold: { color: COLORS.primary, fontWeight: '700' },
